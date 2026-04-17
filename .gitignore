@@ -1,0 +1,11 @@
+.env
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.streamlit/
+.venv/
+venv/
+output/*
+!output/.gitkeep
+benchmarks/results/*
+!benchmarks/results/.gitkeep

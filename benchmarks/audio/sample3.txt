@@ -1,0 +1,1 @@
+uh yeah can you like make a folder test and maybe add a python script that checks if a number is prime or something

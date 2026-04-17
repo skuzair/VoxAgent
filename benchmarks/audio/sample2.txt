@@ -1,0 +1,1 @@
+Summarize this text: Artificial intelligence is transforming industries by automating tasks and improving efficiency, and save it to a file called summary.txt
