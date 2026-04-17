@@ -25,6 +25,8 @@ def init_memory() -> None:
         st.session_state["transcript_editor"] = ""
     if "confirm_overwrite" not in st.session_state:
         st.session_state["confirm_overwrite"] = False
+    if "confirm_overwrite_default" not in st.session_state:
+        st.session_state["confirm_overwrite_default"] = False
     if "last_run" not in st.session_state:
         st.session_state["last_run"] = deepcopy(DEFAULT_LAST_RUN)
 
@@ -45,6 +47,7 @@ def clear_history() -> None:
     st.session_state["transcript_draft"] = None
     st.session_state["transcript_editor"] = ""
     st.session_state["confirm_overwrite"] = False
+    st.session_state["confirm_overwrite_default"] = False
     st.session_state["last_run"] = deepcopy(DEFAULT_LAST_RUN)
 
 

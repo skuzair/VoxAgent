@@ -239,7 +239,7 @@ def start_transcription(audio_bytes: bytes, audio_format: str, source_label: str
     }
     st.session_state["transcript_editor"] = transcript
     st.session_state["pending_action"] = None
-    st.session_state["confirm_overwrite"] = False
+    st.session_state["confirm_overwrite_default"] = False
 
     set_last_run(
         {
@@ -392,7 +392,7 @@ def handle_pending_confirmation(confirm: bool) -> None:
 
     finalize_execution(transcript, intent_payload, execution, warnings=warnings)
     st.session_state["pending_action"] = None
-    st.session_state["confirm_overwrite"] = False
+    st.session_state["confirm_overwrite_default"] = False
 
 
 def send_pending_back_to_edit() -> None:
@@ -406,7 +406,7 @@ def send_pending_back_to_edit() -> None:
     }
     st.session_state["transcript_editor"] = pending["transcript"]
     st.session_state["pending_action"] = None
-    st.session_state["confirm_overwrite"] = False
+    st.session_state["confirm_overwrite_default"] = False
     set_last_run(
         {
             "transcript": pending["transcript"],
@@ -477,6 +477,11 @@ def render_confirmation() -> None:
     if not pending:
         return
 
+    if "confirm_overwrite" not in st.session_state:
+        st.session_state["confirm_overwrite"] = bool(
+            st.session_state.get("confirm_overwrite_default", False)
+        )
+
     with st.container(border=True):
         st.subheader("Action Confirmation")
         st.caption("Human-in-the-loop safeguard before local file changes.")
@@ -493,7 +498,6 @@ def render_confirmation() -> None:
         st.checkbox(
             "Allow overwrite for existing files in output/",
             key="confirm_overwrite",
-            value=False,
         )
 
         with st.expander("View Structured Intent"):
