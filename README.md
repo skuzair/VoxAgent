@@ -1,28 +1,186 @@
 # Voice-Controlled Local AI Agent
 
-A clean Streamlit demo that accepts microphone or uploaded audio, transcribes it with Groq Whisper, classifies intent with a Groq LLM, executes safe local tools inside `output/`, and shows each pipeline stage in a structured UI.
+This project is a voice-controlled AI agent built to satisfy the assignment requirement of accepting audio input, converting it to text, classifying user intent, executing local tools safely, and displaying the full pipeline in a clean UI.
 
-## Stack
+## Objective
+
+The goal of this system is to:
+
+- accept audio from microphone input or uploaded files
+- convert speech to text
+- classify the user’s intent
+- execute the appropriate local tool
+- show the transcript, detected intent, action taken, and final result in the UI
+
+## Implemented Stack
 
 - STT: Groq Whisper `whisper-large-v3`
 - LLM: Groq `mixtral-8x7b-32768` by default
 - UI: Streamlit
 - Backend: Python
 - Memory: `st.session_state`
-- Tools: native Python file handling inside an `output/` sandbox
 
-## Features
+## Why Groq Was Used for STT
 
-- Microphone input through `streamlit-mic-recorder`
-- Audio file upload for `.wav`, `.mp3`, `.m4a`, `.ogg`, and `.webm`
-- Transcript review and manual correction before intent classification
-- Compact structured JSON intent payloads using `type` and `steps`
-- Validation and safe fallback when LLM output is malformed
-- Human-in-the-loop confirmation before file operations
-- File overwrite conflict detection
-- Session history stored in memory for the active Streamlit session
-- Optional benchmarking script that stays outside the main app flow
-- Benchmark artifacts saved automatically to `benchmarks/results/`
+The assignment preferred a local STT model when possible. This implementation uses Groq Whisper instead of a fully local Whisper or wav2vec setup because it provides fast, reliable transcription without requiring heavy local inference hardware. This was a practical hardware workaround to keep the demo responsive and easy to run on a normal development machine.
+
+## System Requirements Coverage
+
+### 1. Audio Input
+
+The system supports both required audio input methods:
+
+- direct microphone input using `streamlit-mic-recorder`
+- uploaded audio files such as `.wav`, `.mp3`, `.m4a`, `.ogg`, `.webm`, and `.flac`
+
+### 2. Speech-to-Text
+
+Audio is transcribed with Groq Whisper.
+
+The app also includes a transcript review step so the user can manually fix STT mistakes before intent classification. This helps with edge cases such as misheard words like `palindrome` being transcribed incorrectly.
+
+### 3. Intent Understanding
+
+The transcribed text is sent to a Groq LLM for intent classification.
+
+Supported intents:
+
+- create file
+- write code
+- summarize text
+- general chat
+
+The app uses a compact structured JSON format with validation and safe fallback behavior if the LLM returns malformed output.
+
+### 4. Tool Execution
+
+Based on the detected intent, the system can:
+
+- create files or folders
+- generate code and save it into a file
+- summarize provided text
+- answer in general chat mode
+
+All file and code-writing operations are restricted to the local [`output/`](D:\voxagent\output) folder so the system cannot overwrite arbitrary files on the machine.
+
+### 5. User Interface
+
+The frontend is built with Streamlit.
+
+The UI displays:
+
+- the transcribed text
+- the detected intent
+- the action taken
+- the final output
+- session history
+
+It also includes:
+
+- loading states
+- clear success, warning, and error messages
+- a human-in-the-loop confirmation step before file operations
+
+## Example Flow
+
+User says:
+
+`Create a Python file with a retry function.`
+
+System flow:
+
+1. Transcribe audio to text.
+2. Show the transcript for manual review.
+3. Detect intent such as `create_file` and `write_code`.
+4. Generate Python code.
+5. Create the file inside [`output/`](D:\voxagent\output).
+6. Show the transcript, intent, action, and result in the UI.
+
+## Bonus Features Implemented
+
+This project includes several optional improvements from the assignment:
+
+- compound command support
+- human-in-the-loop confirmation
+- graceful degradation for STT, intent parsing, and tool failures
+- session memory with `st.session_state`
+- model benchmarking in a separate script
+
+## Architecture Overview
+
+Main app flow:
+
+1. Audio input from microphone or uploaded file
+2. STT with Groq Whisper
+3. Editable transcript review
+4. Intent classification with Groq LLM
+5. Validation of structured intent output
+6. Confirmation before file operations
+7. Safe tool execution in `output/`
+8. UI rendering of transcript, intent, action, output, and history
+
+Core files:
+
+- [app.py](D:\voxagent\app.py): Streamlit UI and orchestration
+- [agent/stt.py](D:\voxagent\agent\stt.py): speech-to-text logic
+- [agent/intent.py](D:\voxagent\agent\intent.py): LLM intent classification
+- [agent/validation.py](D:\voxagent\agent\validation.py): intent payload validation
+- [agent/tools.py](D:\voxagent\agent\tools.py): local tool execution
+- [agent/memory.py](D:\voxagent\agent\memory.py): session memory helpers
+- [benchmark.py](D:\voxagent\benchmark.py): isolated benchmark runner
+
+## Safety and Robustness
+
+This project is a demo system, but it includes basic safety and resilience:
+
+- all file writes are sandboxed to [`output/`](D:\voxagent\output)
+- path traversal and absolute paths are blocked
+- existing files are not overwritten unless explicitly allowed
+- transcript review acts as a fail-safe before intent execution
+- malformed intent output falls back safely instead of crashing
+- friendly UI errors are shown for STT, LLM, and tool failures
+
+## Benchmarking
+
+Benchmarking is intentionally isolated from the main app and does not affect the UI pipeline.
+
+Current benchmark coverage:
+
+- STT benchmark with Groq Whisper against reference transcripts
+- LLM benchmark across:
+  - `llama3-70b-8192`
+  - `mixtral-8x7b-32768`
+  - `llama3-8b-8192`
+
+Measured metrics:
+
+- STT:
+  - latency
+  - transcript similarity
+  - exact match
+- LLM:
+  - latency
+  - intent accuracy
+  - JSON validity
+  - structure quality
+
+Benchmark input format:
+
+- place audio files in [`benchmarks/audio/`](D:\voxagent\benchmarks\audio)
+- add a matching `.txt` file for each audio file containing the true transcript
+
+Example:
+
+- `benchmarks/audio/sample1.wav`
+- `benchmarks/audio/sample1.txt`
+
+Run:
+
+```bash
+python benchmark.py
+```
+
+Benchmark outputs are saved automatically in [`benchmarks/results/`](D:\voxagent\benchmarks\results).
 
 ## Project Structure
 
@@ -51,7 +209,7 @@ voice-agent/
 `-- README.md
 ```
 
-## Setup
+## Setup Instructions
 
 1. Create and activate a Python virtual environment.
 2. Install dependencies:
@@ -60,7 +218,7 @@ voice-agent/
 pip install -r requirements.txt
 ```
 
-3. Add your API keys to `.env`:
+3. Add your Groq API key to [`.env`](D:\voxagent\.env):
 
 ```env
 GROQ_API_KEY=your_key_here
@@ -69,108 +227,20 @@ GROQ_FALLBACK_MODEL=llama3-70b-8192
 GROQ_LIGHTWEIGHT_MODEL=llama3-8b-8192
 ```
 
-4. Start the app:
+4. Run the app:
 
 ```bash
 streamlit run app.py
 ```
 
-## Main App Flow
+## Deliverables
 
-1. Audio is captured from the microphone or uploaded from disk.
-2. Groq Whisper transcribes the audio.
-3. The transcript is shown in an editable review box so STT mistakes can be corrected.
-4. The reviewed transcript is classified into a compact intent payload.
-5. A validation layer checks JSON shape, required fields, and safe defaults.
-6. File actions pause for confirmation and warn if a file already exists.
-7. The selected local tool runs inside `output/`.
-8. The UI shows the transcription, intent, action, output, and session history.
+For the full assignment submission, the required deliverables are:
 
-## Safety and Robustness
+1. Code repository with this README
+2. 2–3 minute video demo showing at least two working intents
+3. Technical article describing the architecture, models used, and build challenges
 
-- All file operations are restricted to the local `output/` directory.
-- Absolute paths are rejected.
-- Path traversal attempts like `../../secret.txt` are blocked.
-- Transcript review acts as a fail-safe before intent execution.
-- Invalid or incomplete intent payloads fall back safely to chat mode.
-- Existing files are not overwritten unless explicitly allowed in the confirmation step.
-- Friendly UI messages are shown for STT, LLM, and file execution failures.
+Submission form:
 
-## Benchmarking
-
-Benchmarking is intentionally isolated from the Streamlit app.
-
-- Run the full benchmark:
-
-```bash
-python benchmark.py
-```
-
-- This now saves results automatically to:
-
-- `benchmarks/results/latest.json`
-- `benchmarks/results/latest_llm.csv`
-- `benchmarks/results/latest_stt.csv`
-
-- Optional custom output paths:
-
-```bash
-python benchmark.py --save-json benchmarks/results/run1.json --save-csv benchmarks/results/run1_llm.csv --save-stt-csv benchmarks/results/run1_stt.csv
-```
-
-- Use a custom audio folder:
-
-```bash
-python benchmark.py --audio-dir benchmarks/audio
-```
-
-Benchmark input is now only:
-
-- an audio file
-- a matching `.txt` file containing the true transcript
-
-Example:
-
-- `benchmarks/audio/sample1.wav`
-- `benchmarks/audio/sample1.txt`
-- `benchmarks/audio/sample2.wav`
-- `benchmarks/audio/sample2.txt`
-- `benchmarks/audio/sample3.flac`
-- `benchmarks/audio/sample3.txt`
-
-By default the benchmark labels these sample names as:
-
-- `sample1` -> `clean`
-- `sample2` -> `complex`
-- `sample3` -> `noisy`
-
-The script uses those reference transcripts to:
-
-1. compare Groq Whisper transcript quality against the true transcript
-2. measure STT similarity and exact-match behavior
-3. run the 3 LLM models on the true transcript
-4. compare LLM intent accuracy, JSON validity, and structure quality
-
-For LLM benchmarking, expected intents are derived from the reference transcript so you do not need any extra benchmark label files.
-
-The benchmark compares these LLMs:
-
-- `llama3-70b-8192`
-- `mixtral-8x7b-32768`
-- `llama3-8b-8192`
-
-Metrics:
-
-- STT:
-  - latency
-  - transcript similarity
-  - exact match
-- LLM:
-  - latency
-  - intent accuracy
-  - JSON validity
-  - structure quality
-
-## Why Groq Instead of Fully Local STT
-
-The original objective preferred a local speech-to-text model. This demo uses Groq Whisper because it provides fast, reliable transcription without requiring heavy local model inference or GPU setup. That keeps the demo responsive on machines that may not run Whisper locally at acceptable latency.
+[Submit Your Project Here](https://forms.gle/5x32P7zr4NvyRgK6A)
