@@ -22,7 +22,7 @@ The goal of this system is to:
 
 ## Why Groq Was Used for STT
 
-The assignment preferred a local STT model when possible. This implementation uses Groq Whisper instead of a fully local Whisper or wav2vec setup because it provides fast, reliable transcription without requiring heavy local inference hardware. This was a practical hardware workaround to keep the demo responsive and easy to run on a normal development machine.
+The assignment preferred a local STT model when possible. This implementation uses Groq Whisper instead of a fully local Whisper or wav2vec setup because it provides fast, reliable transcription without requiring heavy local inference hardware. This was a practical hardware workaround to keep the demo responsive and easy to run on a normal development machine. I wasnt able to use local models since I work on a laptop which doesnt have a GPU or good specs, so i had to rely on online models for good enough performance.
 
 ## System Requirements Coverage
 
@@ -232,15 +232,3 @@ GROQ_LIGHTWEIGHT_MODEL=llama3-8b-8192
 ```bash
 streamlit run app.py
 ```
-
-## Deliverables
-
-For the full assignment submission, the required deliverables are:
-
-1. Code repository with this README
-2. 2–3 minute video demo showing at least two working intents
-3. Technical article describing the architecture, models used, and build challenges
-
-Submission form:
-
-[Submit Your Project Here](https://forms.gle/5x32P7zr4NvyRgK6A)
